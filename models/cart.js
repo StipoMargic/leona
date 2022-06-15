@@ -1,6 +1,5 @@
-const { DataTypes, Deferrable} = require("sequelize")
+const { DataTypes} = require("sequelize")
 const { connection } = require("../config/db");
-const { user } = require("./User")
 
 const Cart = connection.define("Cart",{
   id: {
@@ -12,4 +11,4 @@ const Cart = connection.define("Cart",{
   },
 );
 
-module.exports.cart = Cart
+module.exports = Cart

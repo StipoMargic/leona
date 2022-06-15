@@ -1,6 +1,6 @@
 const { DataTypes} = require("sequelize")
 const { connection } = require("../config/db");
-const { cart } = require("./cart");
+const Cart = require("./Cart");
 
 const User = connection.define('User', {
   id: {
@@ -28,15 +28,19 @@ const User = connection.define('User', {
   cart_id: {
         type: DataTypes.UUID,
         references: {
-            model: cart,
+            model: Cart,
             key: "id"
         }
     },
 });
 
-User.hasOne(cart, {
-foreignKey: "cart_id"
+User.hasOne(Cart, {
+  foreignKey: "cart_id",
+  onDelete: "CASCADE"
 });
-cart.belongsTo(User)
+Cart.belongsTo(User, {
+  onDelete: "CASCADE"
+}) 
 
-module.exports.user = User;
+
+module.exports = User;

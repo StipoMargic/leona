@@ -1,9 +1,9 @@
 const { DataTypes, Deferrable } = require("sequelize")
 const { connection } = require("../config/db");
-const { order } = require("./Order");
-const { product } = require("./Product");
+const Order = require("./Order");
+const Product = require("./Product");
 
-module.exports.orderProduct = connection.define("Order Product",{
+const OrderProduct = connection.define("Order Product",{
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -13,7 +13,7 @@ module.exports.orderProduct = connection.define("Order Product",{
   order_id: {
     type: DataTypes.UUID,
     references: {
-      model: order,
+      model: Order,
       key: 'id',
       deferrable: Deferrable.INITIALLY_IMMEDIATE
     },
@@ -21,7 +21,7 @@ module.exports.orderProduct = connection.define("Order Product",{
   product_id: {
     type: DataTypes.UUID,
     references: {
-      model: product,
+      model: Product,
       key: 'id',
       deferrable: Deferrable.INITIALLY_IMMEDIATE
     }
@@ -34,3 +34,6 @@ module.exports.orderProduct = connection.define("Order Product",{
   }
 });
 
+
+
+module.exports = OrderProduct

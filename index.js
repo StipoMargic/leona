@@ -2,25 +2,25 @@ const express = require("express")
 const cors = require("cors")
 const bodyParser = require("body-parser")
 const { connection } = require("./config/db")
-const { user } = require("./models/User")
-const { cart } = require("./models/Cart")
-const { product } = require("./models/Product")
-const { order } = require("./models/Order")
-const { cartProduct } = require("./models/CartProduct")
-const { orderProduct } = require("./models/OrderProduct")
-const { productCategory } = require("./models/ProductCategory")
+const User = require("./models/User")
+const Cart = require("./models/Cart")
+const Product = require("./models/Product")
+const Order = require("./models/Order")
+const CartProduct = require("./models/CartProduct")
+const OrderProduct = require("./models/OrderProduct")
+const ProductCategory = require("./models/ProductCategory")
 
 
 const init = async () => {
 try {
   await connection.authenticate();
-  await user.sync({ force: true })
-  // await product.sync({ force: true })
-  await cart.sync({ force: true })
-  // await order.sync({ force: true })
-  // await cartProduct.sync({ force: true })
-  // await orderProduct.sync({ force: true })
-  // await productCategory.sync({ force: true })
+  await Cart.sync({ force: false })
+  await User.sync({ force: false })
+  await ProductCategory.sync({ force: false })
+  await Product.sync({ force:  false })
+  await Order.sync({ force: false })
+  await CartProduct.sync({ force: false })
+  await OrderProduct.sync({ force: false })
   console.log('Connection has been established successfully.');
 } catch (error) {
   console.error('Unable to connect to the database:', error);

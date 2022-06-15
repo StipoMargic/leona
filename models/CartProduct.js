@@ -1,7 +1,7 @@
 const { DataTypes} = require("sequelize")
 const { connection } = require("../config/db");
 
-module.exports.cartProduct = connection.define("CartProduct",{
+const CartProduct = connection.define("CartProduct",{
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -26,3 +26,5 @@ module.exports.cartProduct = connection.define("CartProduct",{
   }
 
 });
+
+module.exports = CartProduct

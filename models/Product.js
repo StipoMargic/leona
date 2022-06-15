@@ -1,7 +1,8 @@
 const { DataTypes} = require("sequelize")
 const { connection } = require("../config/db");
+const  ProductCategory = require("./ProductCategory");
 
-module.exports.product = connection.define("Products",{
+const Product = connection.define("Products",{
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -13,10 +14,22 @@ module.exports.product = connection.define("Products",{
     allowNull: false
   },
   description: {
-    type: DataTypes.STRING,
-   
+    type: DataTypes.STRING
   },
-  price: {
+  price: { 
     type: DataTypes.FLOAT,
-  }
+  },
+  category_id: {
+        type: DataTypes.UUID,
+        references: {
+            model: ProductCategory,
+            key: "id"
+        }
+    },
 });
+
+ProductCategory.hasMany(Product, {
+  foreignKey: "category_id"
+})
+Product.belongsTo(ProductCategory)
+module.exports = Product

@@ -1,8 +1,8 @@
 const { DataTypes, Deferrable } = require("sequelize")
 const { connection } = require("../config/db");
-const { user } = require("./User")
+const User = require("./User")
 
-module.exports.order = connection.define("Order", {
+const Order = connection.define("Order", {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
@@ -23,10 +23,11 @@ module.exports.order = connection.define("Order", {
   user_id: {
     type: DataTypes.UUID,
     references: {
-      model: user,
+      model: User,
       key: 'id',
       deferrable: Deferrable.INITIALLY_IMMEDIATE
     }
   },
 });
 
+module.exports = Order

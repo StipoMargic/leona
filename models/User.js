@@ -1,10 +1,12 @@
 const { DataTypes} = require("sequelize")
 const { connection } = require("../config/db");
 const Cart = require("./Cart");
+const bcrypt = require("bcrypt");
+
 
 const User = connection.define('User', {
   id: {
-  type: DataTypes.UUID,
+    type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     allowNull: false,
     primaryKey: true
@@ -17,6 +19,10 @@ const User = connection.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   email: {
     type: DataTypes.STRING,
     allowNull: false
@@ -26,21 +32,26 @@ const User = connection.define('User', {
     allowNull: false
   },
   cart_id: {
-        type: DataTypes.UUID,
-        references: {
-            model: Cart,
-            key: "id"
-        }
-    },
+    type: DataTypes.UUID,
+    references: {
+      model: Cart,
+      key: "id"
+    }
+  },
 });
 
 User.hasOne(Cart, {
-  foreignKey: "cart_id",
+  foreignKey: "cart_xid",
   onDelete: "CASCADE"
 });
 Cart.belongsTo(User, {
   onDelete: "CASCADE"
 }) 
+
+User.beforeCreate((user) => {
+  const hashedPassword = bcrypt.hashSync(user.password, 5);
+  user.password = hashedPassword;
+});
 
 
 module.exports = User;

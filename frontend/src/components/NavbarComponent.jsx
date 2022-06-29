@@ -10,6 +10,7 @@ import {
 	FormControl,
 	Modal,
 } from "react-bootstrap";
+import { useGoldContext } from "../context/GoldContext";
 
 const NavbarComponent = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +21,7 @@ const NavbarComponent = () => {
 	const [error, setError] = useState("");
 	const username = localStorage.getItem("name");
 	const handleClose = () => setIsOpen(false);
+	const { categories } = useGoldContext();
 	const handleChange = (event) => {
 		setLoginInfo((prev) => ({
 			...prev,
@@ -52,6 +54,7 @@ const NavbarComponent = () => {
 			})
 			.catch((error) => setError("Nesto je poslo po krivu!"));
 	};
+
 	return (
 		<div className="container">
 			<Navbar bg="light" expand="lg">
@@ -64,17 +67,18 @@ const NavbarComponent = () => {
 							style={{ maxHeight: "100px" }}
 							navbarScroll
 						>
-							<Nav.Link href="#action1">Početna</Nav.Link>
+							<Nav.Link href="/">Početna</Nav.Link>
 							<Nav.Link href="/about">O nama</Nav.Link>
-							<NavDropdown title="Link" id="navbarScrollingDropdown">
-								<NavDropdown.Item href="#action3">Proizvodi</NavDropdown.Item>
-								<NavDropdown.Item href="#action4">
-									Another action
-								</NavDropdown.Item>
-								<NavDropdown.Divider />
-								<NavDropdown.Item href="#action5">
-									Something else here
-								</NavDropdown.Item>
+							<NavDropdown title="Proizvodi" id="navbarScrollingDropdown">
+								{categories != undefined &&
+									categories.map((category) => (
+										<div key={categories.id}>
+											<NavDropdown.Item href={`/categories/${category.name}`}>
+												{category.name}
+											</NavDropdown.Item>
+											<NavDropdown.Divider />
+										</div>
+									))}
 							</NavDropdown>
 							<Nav.Link href="/contact">Kontakt</Nav.Link>
 						</Nav>

@@ -61,7 +61,6 @@ shop.post(
 			res.status(401).json({ error: "Please provide an image" });
 		}
 		const filename = await fileUpload.save(req.file.buffer);
-		console.log(filename);
 		const [category, created] = await ProductCategory.findOrCreate({
 			where: { name: req.body.name },
 			defaults: {
@@ -86,7 +85,7 @@ shop.get("/categories/:name", async (req, res) => {
 	if (category === null) {
 		return res.status(404).json({ message: "Category not found!" });
 	}
-	return res.json(category);
+	return res.json(await category.getProducts());
 });
 
 shop.delete("/categories/:name", verifyJwt, async (req, res) => {
@@ -162,22 +161,36 @@ shop.delete("/products/:pName", verifyJwt, async (req, res) => {
 	return res.status(204).json();
 });
 
-shop.post("/products", verifyJwt, async (req, res) => {
-	if (req.user.role !== "admin") {
-		return res.status(401).json({ message: "You are not allowed here!" });
+shop.post(
+	"/products",
+	[upload.single("image"), verifyJwt],
+	async (req, res) => {
+		if (req.user.role !== "admin") {
+			return res.status(401).json({ message: "You are not allowed here!" });
+		}
+		const product = await Product.findOne({
+			where: { name: req.body.name },
+		});
+		if (product !== null) {
+			return res.status(404).json({ message: "Product already exist!" });
+		}
+		const imagePath = path.join(__dirname, "/public/images");
+		const fileUpload = new Resize(imagePath);
+		if (!req.file) {
+			res.status(401).json({ error: "Please provide an image" });
+		}
+		const filename = await fileUpload.save(req.file.buffer);
+		try {
+			const newProduct = await Product.create({
+				...req.body,
+				imageURL: filename,
+			});
+			return res.status(201).json(newProduct);
+		} catch (error) {
+			console.log(error);
+		}
 	}
-	const product = await Product.findOne({
-		where: { name: req.body.name },
-	});
-	if (product !== null) {
-		return res.status(404).json({ message: "Product already exist!" });
-	}
-	const newProduct = await Product.create({
-		...req.body,
-	});
-
-	return res.status(201).json(newProduct);
-});
+);
 
 shop.patch("/products/:pName", verifyJwt, async (req, res) => {
 	if (req.user.role !== "admin") {

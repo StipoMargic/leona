@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { connection } = require("./config/db");
@@ -8,16 +9,18 @@ const Order = require("./models/Order");
 const OrderProduct = require("./models/OrderProduct");
 const ProductCategory = require("./models/ProductCategory");
 const bcrypt = require("bcrypt");
+const upload = require("./config/uploadMiddleware");
+const Resize = require("./config/Resize");
 const { signJwt, verifyJwt } = require("./config/jwt");
 
 const init = async () => {
 	try {
 		await connection.authenticate();
 		await User.sync({ alter: true });
-		await ProductCategory.sync({ alter: false });
-		await Product.sync({ alter: false });
-		await Order.sync({ alter: false });
-		await OrderProduct.sync({ alter: false });
+		await ProductCategory.sync({ alter: true });
+		await Product.sync({ alter: true });
+		await Order.sync({ alter: true });
+		await OrderProduct.sync({ alter: true });
 		console.log("Connection has been established successfully.");
 	} catch (error) {
 		console.error("Unable to connect to the database:", error);
@@ -32,8 +35,10 @@ const shop = express.Router();
 const userRouter = express.Router();
 
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.static("public"));
 app.use("/api", shop);
 app.use("/api", userRouter);
 app.use(verifyJwt);
@@ -41,20 +46,34 @@ shop.get("/", (req, res) => {
 	return res.status(404).json("Radi");
 });
 
-shop.post("/categories", verifyJwt, async (req, res) => {
-	if (req.user.role !== "admin") {
-		return res.status(401).json({ message: "You are not allowed here!" });
+shop.post("/post", upload.single("image"), async function (req, res) {});
+
+shop.post(
+	"/categories",
+	[verifyJwt, upload.single("image")],
+	async (req, res) => {
+		if (req.user.role !== "admin") {
+			return res.status(401).json({ message: "You are not allowed here!" });
+		}
+		const imagePath = path.join(__dirname, "/public/images");
+		const fileUpload = new Resize(imagePath);
+		if (!req.file) {
+			res.status(401).json({ error: "Please provide an image" });
+		}
+		const filename = await fileUpload.save(req.file.buffer);
+		console.log(filename);
+		const [category, created] = await ProductCategory.findOrCreate({
+			where: { name: req.body.name },
+			defaults: {
+				name: req.body.name,
+				imageURL: filename,
+			},
+		});
+		if (created) {
+			return res.status(201).json(category);
+		}
 	}
-	const [category, created] = await ProductCategory.findOrCreate({
-		where: { name: req.body.name },
-		defaults: {
-			...req.body,
-		},
-	});
-	if (created) {
-		return res.status(201).json(category);
-	}
-});
+);
 
 shop.get("/categories", async (req, res) => {
 	return res.status(200).json(await ProductCategory.findAll());
